@@ -1,4 +1,4 @@
-#!/bin/bash
+\#!/bin/bash
 #Variables
 myname=shaik
 timestamp=$(date '+%d%m%Y-%H%M%S')
@@ -68,5 +68,40 @@ if [ $? -eq 0 ]; then
 	echo "Copied archive files to S3 bucket successfully"
 fi
 
+echo "-------------------------------------------------------------------"
+#----------------------------------------------------------------------------
+# Book Keeping data
+#----------------------------------------------------------------------------
+file=/var/www/html/inventory.html
+filesize=$(du -h "/tmp/${myname}-httpd-logs-${timestamp}.tar" | awk '{print $1}')
+
+if [ -f "$file" ]; then
+    	echo "$file exists. Appending book keeping data..."
+	echo "<br>" >> $file
+        echo "&emsp;&emsp;httpd-logs&emsp;&emsp;${timestamp}&emsp;&emsp;&emsp;tar&emsp;&emsp;$filesize" >> $file
+
+else 
+    	echo "$file does not exist."
+    	echo "creating $file ..."
+	echo "&emsp;&emsp;<b>Log Type</b>&emsp;&emsp;<b>Time Created</b>&emsp;&emsp;&emsp;&emsp;<b>Type</b>&emsp;&nbsp;<b>Size</b>" > $file
+	echo "<br>" >> $file
+	echo "Adding book keeping data to $file ..."
+	echo "&emsp;&emsp;httpd-logs&emsp;&emsp;${timestamp}&emsp;&emsp;&emsp;tar&emsp;&emsp;$filesize" >> $file
+
+fi
+
+echo "Book keeping data added to $file"
+echo "-------------------------------------------------------------------"
+
+#check if cron job is scheduled or not
+cronfile=/etc/cron.d/automation
+
+if [ -f "$cronfile" ]; then
+	echo "Cron job already scheduled"
+else
+	echo "Creating cron job..."
+	echo "15 22 * * * root /root/Automation_Project/automation.sh" > $cronfile
+	echo "Cron job created"
+fi 
 echo "-------------------------------------------------------------------"
 
